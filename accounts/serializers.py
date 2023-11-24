@@ -1,33 +1,20 @@
 # accounts > serializers.py
 
-from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer
+from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
 
-class CustomRegisterSerializer(RegisterSerializer):
-    nickname = serializers.CharField(max_length=30)
-    daily_chat_count = serializers.IntegerField(default=0)
 
-    def get_cleaned_data(self):
-        super(CustomRegisterSerializer, self).get_cleaned_data()
+class CustomuserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
-        return {
-            'username': self.validated_data.get('username', ''),
-            'password1': self.validated_data.get('password1', ''),
-            'email': self.validated_data.get('email', ''),
-            'nickname': self.validated_data.get('nickname', ''),
-            'daily_chat_count': self.validated_data.get('daily_chat_count', 0)
-        }
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'email', 'password', 'name')
 
-class CustomLoginSerializer(LoginSerializer):
-    username = None
-    
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        
-        refresh = RefreshToken.for_user(self.user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        
-        return data
+# 패스워드가 필요없는 다른 테이블에서 사용할 용도
+class CustomuserInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'email', 'name')

@@ -1,31 +1,26 @@
 # accounts > managers.py
 
-from django.contrib.auth.base_user import BaseUserManager
-from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import BaseUserManager
 
-class CustomUserManager(BaseUserManager):
-    
-    def create_user(self, name, email, nickname, password, **extra_fields):
-        if not name:
-            raise ValueError(_('사용자 이름은 필수입니다!'))
-        if not email:
-            raise ValueError(_('이메일은 필수입니다!'))
-        if not nickname:
-            raise ValueError(_('닉네임은 필수입니다!'))
-        email = self.normalize_email(email)
-        user = self.model(name=name, email=email, nickname=nickname, **extra_fields)
+class CustomuserManager(BaseUserManager):
+    def create_user(self, email, name, password=None):
+
+        user = self.model(
+            email=self.normalize_email(email),
+            name=name,
+        )
+
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
         return user
-    
-    def create_superuser(self, name, email, nickname, password, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-        
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError(_("슈퍼유저는 'is_staff'가 반드시 True여야 합니다!"))
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_("슈퍼유저는 'is_superuser'가 반드시 True여야 합니다!"))
-        return self.create_user(name, email, nickname, password, **extra_fields)
 
+    def create_superuser(self, email, name, password):
+        user = self.create_user(
+            email,
+            name=name,
+            password=password,
+        )
+
+        user.is_admin = True
+        user.save(using=self._db)
+        return user

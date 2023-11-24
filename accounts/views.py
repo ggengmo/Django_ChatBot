@@ -1,40 +1,50 @@
 # accounts > views.py
 
-from dj_rest_auth.views import LoginView as BaseLoginView
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
-from datetime import datetime
-from django.conf import settings
 from rest_framework import status
-from rest_framework_simplejwt import settings as api_settings
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
-class LoginView(BaseLoginView):
-    def create_token(self, user):
-        refresh = RefreshToken.for_user(user)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
+from rest_framework_simplejwt.tokens import RefreshToken
 
-    def login(self):
-        self.user = self.serializer.validated_data['user']
-        self.token = self.create_token(self.user)
-        if getattr(settings, 'REST_SESSION_LOGIN', True):
-            self.process_login()
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
 
-    def get_response(self):
-        serializer_class = self.get_response_serializer()
-        serializer = serializer_class(instance=self.token, context={'request': self.request})
+from accounts.serializers import CustomuserSerializer
 
-        response = Response(serializer.data, status=status.HTTP_200_OK)
 
-        if getattr(settings, 'REST_USE_JWT', False):
-            if getattr(settings, 'JWT_AUTH_COOKIE', None):
-                expiration = (datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA)
-                response.set_cookie(
-                    settings.JWT_AUTH_COOKIE,
-                    self.token['access'],
-                    expires=expiration,
-                    httponly=True
-                )
-        return response
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+    name = request.data.get('name')
+
+    serializer = CustomuserSerializer(data=request.data)
+    serializer.email = email
+    serializer.name = name
+
+    if serializer.is_valid(raise_exception=True):
+        user = serializer.save()
+        user.set_password(password)
+        user.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    user = authenticate(email=email, password=password)
+    if user is None:
+        return Response({'message': '아이디 또는 비밀번호가 일치하지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    refresh = RefreshToken.for_user(user)
+    update_last_login(None, user)
+
+    return Response({'refresh_token': str(refresh),
+                        'access_token': str(refresh.access_token), }, status=status.HTTP_200_OK)
