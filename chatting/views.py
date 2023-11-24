@@ -6,13 +6,15 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import os
 from .models import Conversation
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 load_dotenv()
 client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY'],
 )
 
-class ChatbotView(View):
+class ChatbotView(LoginRequiredMixin, View):
+    login_url = 'accounts/login/'
     def get(self, request, *args, **kwargs):
         conversations = request.session.get('conversations', [])
         return render(request, 'chatting.html', {'conversations': conversations})
