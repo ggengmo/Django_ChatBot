@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# OpenAI API Key
+import os
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Application definition
 
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'accounts',
+    'chatting',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
