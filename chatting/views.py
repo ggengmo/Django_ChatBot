@@ -7,6 +7,7 @@ from openai import OpenAI
 import os
 from .models import Conversation
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .decorators import daily_limit
 
 load_dotenv()
 client = OpenAI(
@@ -15,6 +16,11 @@ client = OpenAI(
 
 class ChatbotView(LoginRequiredMixin, View):
     login_url = 'accounts/login/'
+    
+    @daily_limit
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
     def get(self, request, *args, **kwargs):
         conversations = request.session.get('conversations', [])
         return render(request, 'chatting.html', {'conversations': conversations})
@@ -39,7 +45,7 @@ class ChatbotView(LoginRequiredMixin, View):
             response = completions.choices[0].message.content
 
             # 대화 기록 DB에 저장
-            conversation_db = Conversation(prompt=prompt, response=response)
+            conversation_db = Conversation(user=request.user, prompt=prompt, response=response)
             conversation_db.save()
 
             conversation = {'prompt': prompt, 'response': response}
@@ -51,9 +57,9 @@ class ChatbotView(LoginRequiredMixin, View):
 
 chat_room = ChatbotView.as_view()
 
-class ChatHistoryView(View):
+class ChatHistoryView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        conversations = Conversation.objects.all()
+        conversations = Conversation.objects.filter(user=request.user)
         return render(request, 'chat_history.html', {'conversations': conversations})
     
 chat_history = ChatHistoryView.as_view()
