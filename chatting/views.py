@@ -50,3 +50,10 @@ class ChatbotView(LoginRequiredMixin, View):
         return self.get(request, *args, **kwargs)
 
 chat_room = ChatbotView.as_view()
+
+class ChatHistoryView(View):
+    def get(self, request, *args, **kwargs):
+        conversations = Conversation.objects.all()
+        return render(request, 'chat_history.html', {'conversations': conversations})
+    
+chat_history = ChatHistoryView.as_view()
