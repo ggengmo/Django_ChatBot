@@ -15,7 +15,7 @@ client = OpenAI(
 )
 
 class ChatbotView(LoginRequiredMixin, View):
-    login_url = 'accounts/login/'
+    # login_url = '/accounts/login/'
     
     @daily_limit
     def dispatch(self, request, *args, **kwargs):

@@ -33,4 +33,4 @@ class CustomUser(AbstractBaseUser):
         return self.is_admin
     
     class Meta:
-        db_table = 'user' # 테이블명을 user로 설정
+        db_table = 'user'
