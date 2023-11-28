@@ -4,14 +4,14 @@ document.getElementById("login-form").addEventListener("submit", function(event)
     let email = document.getElementById("email").value
     let password = document.getElementById("your_pass").value
 
-    fetch('http://127.0.0.1:8000/chatting/', {
+    fetch('http://127.0.0.1:8000/accounts/login/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('jwt')}` // 토큰을 헤더에 포함
         },
         body: JSON.stringify({
-            // 필요한 데이터
+            email: email,   // 사용자명
+            password: password,   // 비밀번호
         }),
     })
     .then(response => response.json())

@@ -8,6 +8,7 @@ import os
 from .models import Conversation
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .decorators import daily_limit
+from django.http import JsonResponse
 
 load_dotenv()
 client = OpenAI(
@@ -17,14 +18,14 @@ client = OpenAI(
 class ChatbotView(LoginRequiredMixin, View):
     # login_url = '/accounts/login/'
     
-    @daily_limit
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
     def get(self, request, *args, **kwargs):
-        conversations = request.session.get('conversations', [])
-        return render(request, 'chatting.html', {'conversations': conversations})
-
+        conversations = Conversation.objects.filter(user=request.user).values()
+        return JsonResponse(list(conversations), safe=False)
+    
+    @daily_limit
     def post(self, request, *args, **kwargs):
         prompt = request.POST.get('prompt')
         if prompt:
@@ -53,7 +54,9 @@ class ChatbotView(LoginRequiredMixin, View):
             session_conversations.append(conversation)
             request.session['conversations'] = session_conversations
 
-        return self.get(request, *args, **kwargs)
+            return JsonResponse(conversation)
+
+        return JsonResponse({"error": "No prompt provided"}, status=400)
 
 chat_room = ChatbotView.as_view()
 
