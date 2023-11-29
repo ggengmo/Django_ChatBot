@@ -31,10 +31,7 @@ signup = SignupView.as_view()
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    
-    def get(self, request, *args, **kwargs):
-        return Response({"message": "Please use POST request to login."})
-    
+
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -46,8 +43,12 @@ class LoginView(APIView):
         refresh = RefreshToken.for_user(user)
         update_last_login(None, user)
 
-        return Response({'refresh_token': str(refresh),
-                            'access_token': str(refresh.access_token), }, status=status.HTTP_200_OK)
+        return Response({
+            'refresh_token': str(refresh),
+            'access_token': str(refresh.access_token),
+            'user_id': user.id,  # 유저 아이디를 클라이언트로 전송
+            'email': user.email,  # 유저 이메일을 클라이언트로 전송
+        }, status=status.HTTP_200_OK)
 
 login = LoginView.as_view()
 
