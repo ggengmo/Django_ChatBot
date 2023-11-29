@@ -24,14 +24,16 @@ body {
 
 .top_menu {
     background-color: #fff;
+    height: 50px;
     width: 100%;
-    padding: 20px 0 15px;
+    padding: 15px 0 15px;
     box-shadow: 0 1px 30px rgba(0, 0, 0, 0.1);
 }
 
 .top_menu .buttons {
     margin: 3px 0 0 20px;
     position: absolute;
+    cursor: pointer;
 }
 
 .top_menu .buttons .button {
@@ -48,12 +50,37 @@ body {
 }
 
 .top_menu .buttons .button.minimize {
+    background-color: #fde8b6;
+}
+
+.top_menu .buttons .button.minimize:hover {
     background-color: #fdbf68;
 }
 
 .top_menu .buttons .button.maximize {
+    background-color: #d3e8a1;
+}
+
+.top_menu .buttons .button.maximize:hover {
     background-color: #a3d063;
 }
+
+.top_menu .buttons .button.maximize2 {
+    background-color: #d3e8a1;
+}
+
+.top_menu .buttons .button.maximize2:hover {
+    background-color: #a3d063;
+}
+
+.top_menu .buttons .button.maximize3 {
+    background-color: #d3e8a1;
+}
+
+.top_menu .buttons .button.maximize3:hover {
+    background-color: #a3d063;
+}
+
 
 .top_menu .title {
     text-align: center;
@@ -64,9 +91,9 @@ body {
 .messages {
     position: relative;
     list-style: none;
-    padding: 20px 10px 0 10px;
+    padding: 25px 10px 0 10px;
     margin: 0;
-    height: 800px;
+    height: 750px;
     overflow: scroll;
 }
 
@@ -119,6 +146,7 @@ body {
 
 .messages .message.appeared {
     opacity: 1;
+    transition: opacity 0.5s linear;
 }
 
 .messages .message .avatar {

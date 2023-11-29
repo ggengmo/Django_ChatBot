@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>animated chat window - Bootdey.com</title>
+    <title>chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
@@ -13,10 +14,12 @@
                 <div class="button close"></div>
                 <div class="button minimize"></div>
                 <div class="button maximize"></div>
+                <!-- <div class="button maximize2"></div> -->
             </div>
             <div class="title">Chat</div>
         </div>
-        <ul class="messages"></ul>
+        <ul class="messages">
+        </ul>
         <div class="bottom_wrapper clearfix">
             <div class="message_input_wrapper">
                 <input class="message_input" placeholder="Type your message here..." />
@@ -34,7 +37,9 @@
                 <div class="text"></div>
             </div>
         </li>
-    </div>
+    </div>    
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="js/chat.js"></script>
 </body>
 </html>

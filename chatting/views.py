@@ -1,33 +1,36 @@
 # chatting/views.py
 
-from django.shortcuts import render
-from django.views import View
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
 from .models import Conversation
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .decorators import daily_limit
-from django.http import JsonResponse
+from chatting.serializers import ConversationSerializer
 
 load_dotenv()
 client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY'],
 )
 
-class ChatbotView(LoginRequiredMixin, View):
-    # login_url = '/accounts/login/'
+class ChatbotView(APIView):
+    permission_classes = [IsAuthenticated]
     
     def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+        response = super().dispatch(request, *args, **kwargs)
+        return response
     
     def get(self, request, *args, **kwargs):
         conversations = Conversation.objects.filter(user=request.user).values()
-        return JsonResponse(list(conversations), safe=False)
+        return Response(list(conversations))
     
     @daily_limit
     def post(self, request, *args, **kwargs):
-        prompt = request.POST.get('prompt')
+        user = request.user
+        prompt = request.data.get('prompt')
         if prompt:
             # 이전 대화 기록 가져오기
             session_conversations = request.session.get('conversations', [])
@@ -46,7 +49,7 @@ class ChatbotView(LoginRequiredMixin, View):
             response = completions.choices[0].message.content
 
             # 대화 기록 DB에 저장
-            conversation_db = Conversation(user=request.user, prompt=prompt, response=response)
+            conversation_db = Conversation(user=user, prompt=prompt, response=response)
             conversation_db.save()
 
             conversation = {'prompt': prompt, 'response': response}
@@ -54,15 +57,16 @@ class ChatbotView(LoginRequiredMixin, View):
             session_conversations.append(conversation)
             request.session['conversations'] = session_conversations
 
-            return JsonResponse(conversation)
+            return Response(conversation)
 
-        return JsonResponse({"error": "No prompt provided"}, status=400)
+        return Response({"error": "No prompt provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 chat_room = ChatbotView.as_view()
 
-class ChatHistoryView(LoginRequiredMixin, View):
+class ChatHistoryView(APIView):
     def get(self, request, *args, **kwargs):
         conversations = Conversation.objects.filter(user=request.user)
-        return render(request, 'chat_history.html', {'conversations': conversations})
+        serialized_conversations = ConversationSerializer(conversations, many=True)
+        return Response(serialized_conversations.data)
     
 chat_history = ChatHistoryView.as_view()
