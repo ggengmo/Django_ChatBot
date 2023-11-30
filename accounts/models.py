@@ -3,6 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .managers import CustomuserManager
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 class CustomUser(AbstractBaseUser):
     email = models.EmailField(
@@ -34,3 +35,23 @@ class CustomUser(AbstractBaseUser):
     
     class Meta:
         db_table = 'user'
+        
+class BlacklistedToken(models.Model):
+    token = models.TextField()
+    
+    @classmethod
+    def blacklist(cls, token):
+        cls.objects.create(token=str(token))
+        
+class CustomRefreshToken(RefreshToken):
+    def blacklist(self):
+        try:
+            self.token.payload
+            BlacklistedToken.blacklist(self.token)
+        except TokenError:
+            pass
+        else:
+            BlacklistedToken.blacklist(self.token)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
