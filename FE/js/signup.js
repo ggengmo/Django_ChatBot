@@ -16,9 +16,16 @@ document.getElementById("register-form").addEventListener("submit", function(eve
         password: password,
         }),
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log(response);
+        if (!response.ok) {
+            throw Error(response.statusText);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('Success:', data);
+        window.location.href = 'http://127.0.0.1:5500/FE/login.html';
     })
     .catch((error) => {
         console.error('Error:', error);
