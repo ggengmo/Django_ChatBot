@@ -84,7 +84,7 @@
     buttonClassNames.forEach(className => {
         document.querySelector(`.button.${className}`).addEventListener('click', function() {
             const jwt = localStorage.getItem('jwt');
-            if (jwt && (className === 'minimize' || className === 'maximize')) {
+            if (jwt && (className === 'maximize')) {
                 return;
             }
             switch (className) {
@@ -101,7 +101,7 @@
                     })
                     .then(response => {
                         if (response.status === 205) {
-                            localStorage.removeItem('jwt'); // 추가된 부분
+                            localStorage.removeItem('jwt'); 
                             localStorage.removeItem('refresh_token');
                             window.location.href = 'http://127.0.0.1:5500/FE/index.html';
                         } else {
@@ -111,7 +111,7 @@
                     .catch(error => console.error('Error:', error));
                     break;
                 case 'minimize':
-                    window.location.href = 'http://127.0.0.1:5500/FE/index.html';
+                    window.location.href = 'http://127.0.0.1:5500/FE/chatlist.html';
                     break;
                 case 'maximize':
                     window.location.href = 'http://127.0.0.1:5500/FE/login.html';
