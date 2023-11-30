@@ -1,5 +1,4 @@
 # Django_ChatBot
-- DRF_ChatBot
 ## 목차
 [1. 목표와 기능](#1-목표와-기능)
 
