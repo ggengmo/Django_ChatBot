@@ -89,7 +89,9 @@
  ┗ 📜README.md
 ```
 
+
 ### 3.2 프로젝트 URL 구조
+
 
 |app: accounts |views 함수 이름|html 파일이름   |
 |:------------|:------------|:------------|
@@ -111,6 +113,7 @@
 <div>
   <img src="https://github.com/ggengmo/Django_ChatBot/assets/142369113/ccbdc2f5-2c6b-45f4-87a0-02e123d7be44" width="100%">
 </div>
+
 ### 3.4 기능
 <img src="https://github.com/ggengmo/Django_ChatBot/assets/142369113/5ae35365-8157-4737-acde-e2b458fe9c71" width="100%">
 
