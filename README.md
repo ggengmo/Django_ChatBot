@@ -52,7 +52,6 @@
  ┃ ┣ 📜managers.py
  ┃ ┣ 📜models.py
  ┃ ┣ 📜serializers.py
- ┃ ┣ 📜tests.py
  ┃ ┣ 📜urls.py
  ┃ ┣ 📜views.py
  ┃ ┗ 📜__init__.py
@@ -69,7 +68,6 @@
  ┃ ┣ 📜decorators.py
  ┃ ┣ 📜models.py
  ┃ ┣ 📜serializers.py
- ┃ ┣ 📜tests.py
  ┃ ┣ 📜urls.py
  ┃ ┣ 📜views.py
  ┃ ┗ 📜__init__.py
@@ -78,7 +76,6 @@
  ┃ ┣ 📜admin.py
  ┃ ┣ 📜apps.py
  ┃ ┣ 📜models.py
- ┃ ┣ 📜tests.py
  ┃ ┣ 📜urls.py
  ┃ ┣ 📜views.py
  ┃ ┗ 📜__init__.py
