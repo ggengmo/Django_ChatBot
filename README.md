@@ -94,7 +94,7 @@
 |/accounts/login/|로그인| | ✔️| | | | |
 |/accounts/logout/|로그아웃| |✔️| | | ✔️| ✔️|
 |/accounts/refresh/|토큰갱신| |✔️ | | |✔️ |✔️ |
-|/chatting/|채팅 목록<br>채팅방 생성<br>채팅방 이름 수정<br>채팅방 삭제|✔️<br><br><br><br>|✔️<br><br>|<br>✔️|<br><br><br>✔️|✔️<br>✔️<br>✔️<br>✔️|✔️<br>✔️<br>✔️<br>✔️| 
+|/chatting/|채팅 목록<br>채팅방 생성<br>채팅방 이름 수정 <br>채팅방 삭제|✔️<br><br><br><br>|✔️<br><br>|<br>✔️|<br><br><br>✔️|✔️<br>✔️<br>✔️<br>✔️|✔️<br>✔️<br>✔️<br>✔️| 
 |/chatting/&lt;int:id&gt;|채팅 내용<br>메시지 발송|✔️<br><br>|<br> ✔️| || ✔️ <br> ✔️ | ✔️ <br> ✔️ |
 
 ### 3.3 개발 일정
