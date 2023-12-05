@@ -1,116 +1,74 @@
 # chatting > views.py
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
-from dotenv import load_dotenv
-from openai import OpenAI
-import os
 from .models import Conversation, ChatRoom
 from .decorators import daily_limit
 from chatting.serializers import ConversationSerializer, ChatRoomSerializer
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+from rest_framework.response import Response
+from rest_framework import status
 
 load_dotenv()
-client = OpenAI(
-    api_key=os.environ['OPENAI_API_KEY'],
-)
+client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
-class ChatlistView(APIView):
+class ChatRoomListCreateView(ListCreateAPIView):
+    serializer_class = ChatRoomSerializer
     permission_classes = [IsAuthenticated]
-    
-    def post(self, request, *args, **kwargs):
-        chatroom = ChatRoom.objects.create(user=request.user)
-        chatroom.name = f'Chatroom {chatroom.id}'
-        chatroom.save()
-        serializer = ChatRoomSerializer(chatroom)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    def get(self, request, *args, **kwargs):
-        chatrooms = ChatRoom.objects.filter(user=request.user)
-        serializer = ChatRoomSerializer(chatrooms, many=True)
-        return Response(serializer.data)
-    
-    def delete(self, request, *args, **kwargs):
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        chatroom.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    def patch(self, request, *args, **kwargs):
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        serializer = ChatRoomSerializer(chatroom, data=request.data, partial=True) # partial=True for partial updates
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-chatlist = ChatlistView.as_view()
+    def get_queryset(self):
+        return ChatRoom.objects.filter(user=self.request.user)
 
-class ChatbotView(APIView):
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, name=f'Chatroom {serializer.instance.id}')
+
+chatlist = ChatRoomListCreateView.as_view()
+
+class ChatRoomRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ChatRoomSerializer
     permission_classes = [IsAuthenticated]
-    
-    def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
-        return response
-    
-    def get(self, request, *args, **kwargs):
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        conversations = chatroom.conversations.all().values()
-        return Response(list(conversations))
-    
+
+    def get_queryset(self):
+        return ChatRoom.objects.filter(user=self.request.user)
+
+chatdetail = ChatRoomRetrieveUpdateDestroyView.as_view()
+
+class ChatbotView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        chatroom_id = self.kwargs.get('id')
+        return Conversation.objects.filter(chatroom__id=chatroom_id, chatroom__user=self.request.user)
+
     @daily_limit
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        prompt = request.data.get('prompt')
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        
+    def perform_create(self, serializer):
+        user = self.request.user
+        prompt = self.request.data.get('prompt')
+        chatroom_id = self.kwargs.get('id')
+        chatroom = ChatRoom.objects.get(id=chatroom_id, user=self.request.user)
         if prompt:
-            # 이전 대화 기록 가져오기
-            session_conversations = request.session.get('conversations', [])
+            session_conversations = self.request.session.get('conversations', [])
             previous_conversations = [
                 {"role": role, "content": content}
                 for conversation in session_conversations
                 for role, content in [("user", conversation['prompt']), ("assistant", conversation['response'])]
             ]
             previous_conversations.append({"role": "user", "content": prompt})
-
             model_engine = "gpt-3.5-turbo"
             completions = client.chat.completions.create(
                 model=model_engine,
                 messages=previous_conversations
             )
             response = completions.choices[0].message.content
-
-            # 대화 기록 DB에 저장
             conversation_db = Conversation(user=user, chatroom=chatroom, prompt=prompt, response=response)
             conversation_db.save()
-
             conversation = {'prompt': prompt, 'response': response}
-            # 대화 기록에 새로운 응답 추가
             session_conversations.append(conversation)
-            request.session['conversations'] = session_conversations
-
-            return Response(conversation)
-
-        return Response({"error": "No prompt provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, *args, **kwargs):
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        chatroom.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    def patch(self, request, *args, **kwargs):
-        chatroom_id = kwargs.get('id')
-        chatroom = ChatRoom.objects.get(id=chatroom_id, user=request.user)
-        serializer = ChatRoomSerializer(chatroom, data=request.data, partial=True) # partial=True for partial updates
-        if serializer.is_valid():
-            serializer.save()
+            self.request.session['conversations'] = session_conversations
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "프롬프트가 제공되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
     
 chatroom = ChatbotView.as_view()
